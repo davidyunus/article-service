@@ -1,38 +1,42 @@
-version: "3.8"
+version: "3.9"
 
 services:
-  article-db:
-    image: postgres:15
-    container_name: article-db
+  db:
+    image: mysql:8.0
+    container_name: article-mysql
+    restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: articles
-    volumes:
-      - db-data:/var/lib/postgresql/data
-      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: article_db
+      MYSQL_USER: article_user
+      MYSQL_PASSWORD: article_pass
     ports:
-      - "5432:5432"
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d articles"]
-      interval: 5s
-      timeout: 5s
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
       retries: 5
 
-  article-api:
+  app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: article-api
+    container_name: article-service
+    restart: always
     depends_on:
-      article-db:
+      db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgres://postgres:postgres@article-db:5432/articles?sslmode=disable
-      PORT: 8080
+      DB_USER: article_user
+      DB_PASSWORD: article_pass
+      DB_NAME: article_db
+      DB_HOST: db
+      DB_PORT: 3306
     ports:
       - "8080:8080"
-    restart: unless-stopped
+    command: ["./article-service"]
 
 volumes:
-  db-data:
+  db_data:

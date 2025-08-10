@@ -1,129 +1,79 @@
 # Article Service
 
-A simple clean-architecture-based Go service for managing articles.  
-Uses [Echo](https://echo.labstack.com/) as the HTTP framework and PostgreSQL as the database.
+This is a simple Article Service built using Golang with Clean Architecture (domain, usecase, repository, handler) and Echo framework.  
+The repository layer uses MySQL with `database/sql`.  
 
----
+## Features
 
-## 📂 Project Structure
+- Create an article
+- List all articles
+- Clean Architecture design
+- Unit tests for usecase, repository, and handlers
+- Docker and docker-compose for deployment
+
+## Project Structure
 
 ```
 .
-├── cmd/
-│   └── server/              # Main application entrypoint
-├── domain/                  # Entities and interfaces
-├── repository/              # Database layer
-├── usecase/                 # Business logic
-├── handler/                 # HTTP handlers
-├── schema.sql               # Database schema
-├── Dockerfile               # Container build file
-├── docker-compose.yml       # Local dev with Postgres
-└── README.md
+├── domain
+│   └── article.go
+├── handler
+│   ├── article_handler.go
+│   └── article_handler_test.go
+├── repository
+│   ├── article_mysql.go
+│   └── article_mysql_test.go
+├── usecase
+│   ├── article_usecase.go
+│   └── article_usecase_test.go
+├── Dockerfile
+├── docker-compose.yml
+├── go.mod
+├── go.sum
+└── main.go
 ```
 
----
+## Requirements
 
-## 🚀 How to Run Locally
-
-### 1. Prerequisites
-- Go 1.21+
+- Go 1.22+
+- MySQL 8.0+
 - Docker & Docker Compose
-- PostgreSQL (if not using Docker)
 
----
+## How to Run Locally
 
-### 2. Clone the Repository
-
-```bash
-git clone https://github.com/yourusername/article-service.git
+1. **Clone the repository**
+```
+git clone https://github.com/davidyunus/article-service.git
 cd article-service
 ```
 
----
-
-### 3. Set up Environment Variables
-
-Create a `.env` file in the project root:
-
-```env
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/articles?sslmode=disable
-PORT=8080
+2. **Setup environment variables**
+Create a `.env` file or set directly in your terminal:
+```
+DB_USER=article_user
+DB_PASSWORD=article_pass
+DB_NAME=article_db
+DB_HOST=localhost
+DB_PORT=3306
 ```
 
----
-
-### 4. Run with Docker Compose
-
-We provide a `docker-compose.yml` that starts:
-- **PostgreSQL** database with schema initialization.
-- **Go API service** that connects to the database.
-
-Run:
-
-```bash
-docker compose up --build
+3. **Run using Docker Compose**
+```
+docker-compose up --build
 ```
 
-Once running:
-- API available at: `http://localhost:8080`
-- PostgreSQL available at: `localhost:5432`
-
----
-
-### 5. Run without Docker
-
-1. Create database & run schema:
-```bash
-createdb articles
-psql -d articles -f schema.sql
+4. **Run without Docker (requires MySQL running locally)**
+```
+go mod tidy
+go run main.go
 ```
 
-2. Run API:
-```bash
-go run cmd/server/main.go
+5. **Access API**
+- Create article: `POST http://localhost:8080/articles`
+- List articles: `GET http://localhost:8080/articles`
+
+## Running Tests
+
 ```
-
----
-
-## 🧪 Running Tests
-
-```bash
 go test ./...
 ```
-
----
-
-## 📦 Example API Endpoints
-
-### Create an Article
-```bash
-curl -X POST http://localhost:8080/articles   -H "Content-Type: application/json"   -d '{
-    "title": "My First Article",
-    "content": "Hello, world!",
-    "author": "David Yunus"
-  }'
-```
-
-### List Articles
-```bash
-curl -X GET "http://localhost:8080/articles?author=John&page=1&limit=10"
-```
-
----
-
-## 🛠 Tech Stack
-
-- **Language**: Go
-- **Framework**: Echo
-- **Database**: PostgreSQL
-- **Architecture**: Clean Architecture (Domain, Usecase, Repository, Handler)
-- **Testing**: `testing` + `testify`
-
----
-
-## 🐳 Docker Setup
-
-- **Dockerfile**: Builds a minimal Go binary and runs the service.
-- **docker-compose.yml**: Defines the database service, mounts schema, and connects it to the API container.
-
-Run `docker compose up --build` to start the stack.
